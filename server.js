@@ -19,7 +19,7 @@ var indexRoutes = require("./routes/index");
 var teamRoutes = require("./routes/team");
 var adminRoutes = require("./routes/admin");
 var studentRoutes = require("./routes/student");
-var url = "mongodb://CSECHack3:csechack3@ds119795.mlab.com:19795/entry_to_hack3";
+var url = "mongodb://CSECHack3:csechack3@ds223015.mlab.com:23015/entry_to_hack3";
 mongoose.connect(url, {
     useNewUrlParser: true
 });

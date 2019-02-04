@@ -12,13 +12,27 @@ router.get("/signup", function (req, res) {
   res.render("studentRegistration");
 });
 
-router.get("/dashboard",isVerified, isStudentLoggedIn, function(req, res) {
+router.get("/dashboard",isStudentLoggedIn, isVerified, function(req, res) {
     if(!req.user.name) {
         res.render("studentDetails");
     } else {
         console.log(req.user.name);
         res.render("studentDashboard");
     }
+});
+
+router.get("/createTeam", isStudentLoggedIn, isVerified, function (req, res) {
+    res.render("createTeam");
+});
+
+router.post("/details", isStudentLoggedIn, isVerified, function(req, res) {
+    Student.findOne({username: req.user.username}, function(err, student) {
+        student.name = req.body.name;
+        student.phone = req.body.phone;
+        student.year = req.body.year;
+        student.rollNumber = req.body.rollno;
+        student.save();
+    });
 });
 
 router.get("/login", function(req, res) {

@@ -12,8 +12,7 @@ router.get("/signup", function (req, res) {
   res.render("studentRegistration");
 });
 
-router.get("/dashboard", isVerified, isStudentLoggedIn, function(req, res) {
-    
+router.get("/dashboard", isVerified, isStudentLoggedIn, function(req, res) {  
             res.render("studentDashboard");
   });
 

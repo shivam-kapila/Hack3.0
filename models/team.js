@@ -13,14 +13,6 @@ var teamSchema = mongoose.Schema({
     area: {
         type: String
     },
-    members: [
-         comments: [
-      {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Comment"
-      }
-      ]
-    ],
     mentorRequired:
     {
         type: Boolean
@@ -34,6 +26,14 @@ var teamSchema = mongoose.Schema({
     teamTokenExpires: { 
        type: Boolean
     },
+    members: [
+         comments: [
+      {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Comment"
+      }
+      ]
+    ]
 });
 
 // PASSWORD HASHING ADDED

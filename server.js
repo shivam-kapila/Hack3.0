@@ -10,7 +10,6 @@ var express = require("express"),
     passport = require("passport"),
     LocalStrategy = require("passport-local"),
     methodOverride = require("method-override"),
-    Mentor = require("./models/mentor"),
     Admin = require("./models/admin"),
     Team = require("./models/team");
 Student = require("./models/student");
@@ -63,10 +62,7 @@ passport.serializeUser(
     });
 passport.deserializeUser(
     function(user, done) {
-        if (isMentor(user)) {
-            Mentor.deserializeUser();
-            done(null, user);
-        } else if (isTeam(user)) {
+        if (isTeam(user)) {
             Team.deserializeUser();
             done(null, user);
         } else if (isAdmin(user)) {
@@ -78,12 +74,6 @@ passport.deserializeUser(
         }
     });
 // // passport.deserializeUser(Admin.deserializeUser());
-
-function isMentor(user) {
-    if (user instanceof Mentor)
-        console.log("Mentor");
-    return true;
-}
 
 function isTeam(user) {
     if (user instanceof Team)
@@ -105,7 +95,6 @@ function isStudent(user) {
 
 app.use(function(req, res, next) {
     // res.locals.currentTeam = req.username;
-    res.locals.mentor = req.user;
     res.locals.team = req.user;
     res.locals.admin = req.user;
     res.locals.student = req.user;
@@ -115,7 +104,6 @@ app.use(function(req, res, next) {
 });
 
 app.use("/", indexRoutes);
-app.use("/mentor", mentorRoutes);
 app.use("/team", teamRoutes);
 app.use("/admin", adminRoutes);
 app.use("/student", studentRoutes);

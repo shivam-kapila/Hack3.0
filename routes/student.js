@@ -39,6 +39,26 @@ router.post("/login", passport.authenticate("student",
     student: req.body.username;
   });
 
+
+router.post("/createTeam", function (req, res, next) {
+    Team.findOne({username: req.body.team}, function(err, team) {
+        if (err) {
+            console.log(err);
+            return res.render("studentDashboard");
+        }
+    });
+    
+    async waterfall([
+        function(done) {
+            crypto.randomBytes(20, function(err, buf) {
+
+            });
+        }
+    ]);
+});
+
+
+
 router.post("/signup", function (req, res) {
     Team.findOne({username: req.body.team}, function(err, team) {
         if (err) {

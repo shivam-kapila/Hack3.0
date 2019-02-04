@@ -46,46 +46,48 @@ passport.use('student', new LocalStrategy(usedStrategy = 'student', Student.auth
 
 passport.serializeUser(
     function(user, done) {
-        // if (isTeam(user)) {
-        //     console.log("Team");
-        //     Team.serializeUser();
-        //     done(null, user);
-        // } else if (isAdmin(user)) {
-        //     console.log(user);
-        //     Admin.serializeUser();
-        //     done(null, user);
-        // } else if (isStudent(user)) {
-        //     console.log(user);
+        if (isTeam(user)) {
+            console.log("Team");
+            Team.serializeUser();
+            done(null, user);
+        } else if (isAdmin(user)) {
+            console.log(user);
+            Admin.serializeUser();
+            done(null, user);
+        } else if (isStudent(user)) {
+            console.log(user);
             Student.serializeUser();
             done(null, user);
-        // }
+        }
     });
 passport.deserializeUser(
     function(user, done) {
-    //      if (isTeam(user)) {
-    //         Team.deserializeUser();
-    //         done(null, user);
-    //     } else if (isAdmin(user)) {
-    //         Admin.deserializeUser();
-    //         done(null, user);
-    //     } else if (isStudent(user)) {
+
+        if (isTeam(user)) {
+            Team.deserializeUser();
+            done(null, user);
+        } else if (isAdmin(user)) {
+            Admin.deserializeUser();
+            done(null, user);
+        } else if (isStudent(user)) {
             Student.deserializeUser();
             done(null, user);
-        // }
+        }
     });
 // // passport.deserializeUser(Admin.deserializeUser());
 
-// function isTeam(user) {
-//     if (user instanceof Team)
-//         console.log("Team");
-//     return true;
-// }
 
-// function isAdmin(user) {
-//     if (user instanceof Admin)
-//         console.log("Admin");
-//     return true;
-// }
+function isTeam(user) {
+    if (user instanceof Team)
+        console.log("Team");
+    return true;
+}
+
+function isAdmin(user) {
+    if (user instanceof Admin)
+        console.log("Admin");
+    return true;
+}
 
 function isStudent(user) {
     if (user instanceof Student)
@@ -95,7 +97,6 @@ function isStudent(user) {
 
 app.use(function(req, res, next) {
     // res.locals.currentTeam = req.username;
-    res.locals.mentor = req.user;
     res.locals.team = req.user;
     res.locals.admin = req.user;
     res.locals.student = req.user;

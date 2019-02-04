@@ -32,6 +32,14 @@ var teamSchema = mongoose.Schema({
     teamTokenExpires: { 
        type: Boolean
     },
+    members: [
+         comments: [
+      {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Comment"
+      }
+      ]
+    ]
 });
 
 // PASSWORD HASHING ADDED

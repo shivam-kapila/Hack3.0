@@ -12,9 +12,86 @@ router.get("/signup", function (req, res) {
   res.render("studentRegistration");
 });
 
-router.get("/dashboard", isVerified, isStudentLoggedIn, function(req, res) {  
-            res.render("studentDashboard");
+
+router.get("/dashboard", isStudentLoggedIn, isVerified,function(req, res) {
+    if(!req.user.name) {
+        res.render("studentDetails");
+    } else {
+        console.log(req.user.name);
+        res.render("studentDashboard");
+    }
+});
+
+router.get("/createTeam", isVerified, isStudentLoggedIn, function(req, res){
+        res.render("createTeam");
+});
+
+router.post("/createTeam", isVerified, isStudentLoggedIn, function(req, res){
+      var mentorNeed = false;
+       if(req.body.mentorRequired == "on"){
+       mentorNeed = true;
+       }
+
+        var newTeam = new Team({
+            username: req.body.username,
+            memberLength: req.body.members,
+            mentorRequired: mentorNeed,
+            area: req.body.area
+          });
+async.waterfall([
+        function(done) {
+        crypto.randomBytes(10, function(err, buf) {
+        var token = buf.toString('hex');
+        done(err, token);
+      });
+    },
+    function(token, done) {
+      Team.findOne({ username: req.body.username }, function(err, student) {
+        team.teamToken = token;
+        student.save(function(err) {
+          done(err, token, team);
+        });
+      });
+    },          
+    function(token, team, done) {
+      var link = 'http://' + req.headers.host + '/student/team/' +req.body.username+ token;
+      var smtpTransport = nodemailer.createTransport({
+        service: 'Gmail', 
+        auth: {
+            type: "login",
+          user: 'csechack3.0@gmail.com',
+          pass: process.env.GMAILPW
+        }
+
+      });
+      var mailOptions = {
+        to: req.user.username,
+        from: 'csechack3.0@gmail.com',
+        subject: 'Team Created',
+        text: 
+          'This is to inform you that you created a team with the following username:\n\n' +
+          req.body.username +
+          '\n \n Please share the username or else share the clickable link to accept team members. \n \n' +
+          'http://' + req.headers.host + '/student/team/' +req.body.username+ token + '\n\n' +
+          'Regards \nTeam CSEC'
+      };
+      smtpTransport.sendMail(mailOptions, function(err) {
+        console.log('mail sent');
+        req.flash('success', 'An e-mail has been sent to ' + req.body.username + ' with further instructions.');
+        done(err, 'done');
+      });
+    }
+  ], function(err) {
+    if (err) {
+        return next(err);
+    res.redirect('/student/createTeam');
+}
+                res.render("/student/dashboard")
   });
+
+
+
+});
 
 router.get("/login", function(req, res) {
     res.render("studentLogin");
@@ -123,6 +200,7 @@ router.post('/verify/:token', function(req, res) {
             student.verifyToken = undefined;
             student.verifyExpires = undefined;
             student.save(function(err) {
+                console.log(student);
                  });
                 });
     },

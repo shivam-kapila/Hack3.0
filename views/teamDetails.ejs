@@ -1,0 +1,45 @@
+<% include ./partials/header%>
+<% include ./partials/mentorGoHome%>
+<div class = "scrollit">
+<table class="">
+  <tr class="thead-dark">
+    <th>Name</th>
+    <th>Year</th>
+    <th>Skills</th> 
+    <th style="min-height:200px">Leader</th>
+  </tr>
+  <% team.members.forEach(function(member){%>
+    <tr class="table-row">
+      <td><%= member.name %></td>
+      <td><%= member.year %></td>
+      <td>
+        <ul>
+          <% for(var i = 0; i < member.skills.length; i++){ %>
+             <% if(member.skills[i]!=="") {%>
+             <li>
+              <%= member.skills[i];%>
+            </li>
+              <% } %>
+          <% } %>
+        </ul> 
+      </td>
+      <td style="min-height:200px"><% if(member.isLeader) { %>
+        Yes
+      <% } else { %>
+        No
+      <% } %>
+      </td>
+    </tr>
+  <% }); %>
+</table>
+</div>
+   
+<div>
+  <form action="/mentor/<%= mentorid%>/view/<%= challengeid%>/<%= username%>/accept" method="POST">
+    <button class="btn btn-lg btn-info btn-block">Accept</button>
+  </form>
+</div>
+<form action="/mentor/<%= mentorid%>/view/<%= challengeid%>/<%= username%>/reject" method="POST">
+    <button class="btn btn-lg btn-warning btn-block">Reject</button>
+  </form>
+<% include ./partials/footer%>

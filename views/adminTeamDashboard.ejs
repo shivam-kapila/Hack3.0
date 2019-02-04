@@ -1,0 +1,56 @@
+<% include ./partials/header %>
+<% include ./partials/adminGoHome%>
+<div class = "ml-5">
+  <table class="">
+    <tr class="thead-dark">
+      <th class="col-3">Name</th>
+      <th class="col-2">Roll No.</th>
+      <th class="col-3">Email</th>
+      <th class="col-2">Phone</th>
+      <th class="col-2">Skills</th>
+    </tr>
+    <% [...team.members].forEach(function (member) { 
+        var skills = '';%>
+    <tr class="table-row">
+      <td class="col-1">
+        <%= member.name %>
+      </td>
+      <td class="col-1">
+        <%= member.rollNumber %>container
+      </td>
+      <td class="col-1">
+        <%= member.email %>
+      </td>
+      <td class="col-1">
+        <%= member.phone %>
+      </td>
+      <td class="col-1">
+        <ul>
+          <% for(var i = 0; i < member.skills.length; i++){ %>
+            <li>
+              <% if(member.skills[i] !== '') {%>
+              <%= member.skills[i];%>
+              <% } %>
+            </li>
+          <% } %>
+        </ul> 
+      </td>
+      <% }); %></h2>
+  </tr>    
+  </table>
+</div>
+<% if(!team.challenge) { %>
+<p>No Challenge Posted </p>
+<% } else {%>
+<p>
+  Challenge posted:
+  <br />
+  <strong>Title:</strong> <%= team.challenge.title%>
+  <br />
+  <strong>Description:</strong> <%= team.challenge.description%>
+  <br />
+  <strong>Category:</strong> <%= team.challenge.category%>
+  </p>
+  <% }%>
+
+<% include ./partials/footer %>

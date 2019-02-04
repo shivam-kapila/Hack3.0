@@ -6,13 +6,14 @@ var studentSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    team: {
+    teamusername: {
         type: String,
         required: true
     },
     email: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     phone: {
         type: String,
@@ -26,20 +27,12 @@ var studentSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    username: {
-        type: String,
-        unique: true,
-        required: true
-    },
     password: {
         type: String,
     },
-    area: {
-        type: String,
-    },
-    skills: {
-        type: [],
-        required: true
+    isLeader: {
+        type: Boolean,
+        default: false
     },
     role: {
         type: String,

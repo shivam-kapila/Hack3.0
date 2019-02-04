@@ -17,7 +17,6 @@ Student = require("./models/student");
 
 //requiring routes
 var indexRoutes = require("./routes/index");
-var mentorRoutes = require("./routes/mentor");
 var teamRoutes = require("./routes/team");
 var adminRoutes = require("./routes/admin");
 var studentRoutes = require("./routes/student");
@@ -42,24 +41,13 @@ app.use(passport.initialize());
 
 app.use(passport.session());
 
-passport.use('mentor', new LocalStrategy(usedStrategy = 'mentor', Mentor.authenticate()));
-// passport.serializeUser(Mentor.serializeUser());
-// passport.deserializeUser(Mentor.deserializeUser());
 passport.use('team', new LocalStrategy(usedStrategy = 'team', Team.authenticate()));
-// passport.serializeUser(Team.serializeUser());
-// passport.deserializeUser(Team.deserializeUser());
 passport.use('admin', new LocalStrategy(usedStrategy = 'admin', Admin.authenticate()));
-
 passport.use('student', new LocalStrategy(usedStrategy = 'student', Student.authenticate()));
-
 
 passport.serializeUser(
     function(user, done) {
-        if (isMentor(user)) {
-            console.log(user);
-            Mentor.serializeUser();
-            done(null, user);
-        } else if (isTeam(user)) {
+        if (isTeam(user)) {
             console.log("Team");
             Team.serializeUser();
             done(null, user);

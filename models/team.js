@@ -8,18 +8,16 @@ var teamSchema = mongoose.Schema({
         // default: "team1"
     },
     memberLength: {
-        type: Integer,
+        type: Number,
     },
     area: {
         type: String
     },
     members: [
-         comments: [
       {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Comment"
+          ref: "Student"
       }
-      ]
     ],
     mentorRequired:
     {

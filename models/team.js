@@ -13,6 +13,12 @@ var teamSchema = mongoose.Schema({
     area: {
         type: String
     },
+    members: [
+      {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Student"
+      }
+    ],
     mentorRequired:
     {
         type: Boolean

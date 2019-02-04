@@ -4,28 +4,22 @@ const passportLocalMongoose = require("passport-local-mongoose");
 var studentSchema = mongoose.Schema({
     name: {
         type: String,
-        required: true
     },
     teamusername: {
         type: String,
-        required: true
     },
-    email: {
+    username: {
         type: String,
-        required: true,
         unique: true
     },
     phone: {
         type: String,
-        required: true
     },
     rollNumber: {
         type: String,
-        required: true
     },
     year: {
         type: String,
-        required: true
     },
     password: {
         type: String,
@@ -37,6 +31,16 @@ var studentSchema = mongoose.Schema({
     role: {
         type: String,
         default: "student"
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verifyToken: {
+        type: String
+    },
+    verifyExpires: {
+        type: Date
     }
 });
 

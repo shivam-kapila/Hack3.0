@@ -3,20 +3,21 @@ var router = express.Router();
 var Student = require("../models/student");
 var Team = require("../models/team");
 var async = require("async");
+var crypto = require("crypto");
 var nodemailer = require("nodemailer");
 var passport = require("passport"),
   LocalStrategy = require('passport-local').Strategy;
 
 router.get("/signup", function (req, res) {
-  res.render("studentSignup");
+  res.render("studentRegistration");
 });
 
-router.get("/dashboard", isStudentLoggedIn, function(req, res) {
+router.get("/dashboard",isVerified, isStudentLoggedIn, function(req, res) {
     if(!req.user.name) {
         res.render("studentDetails");
     } else {
         console.log(req.user.name);
-        res.render("dashboard");
+        res.render("studentDashboard");
     }
 });
 
@@ -28,182 +29,220 @@ router.post("/login", passport.authenticate("student",
   {
     successRedirect: "/student/dashboard",
     failureRedirect: "/student/login",
+    successFlash: "Welcome back!!!",
+    failureFlash: "OOPS!Login failed. Please try again",
+
 
   }), function (req, res) {
-    student: req.body.username;
   });
 
-  router.get("/createTeam", function(req, res) {
-    res.render("createTeam");
-  });
+router.post("/signup", function (req, res, next){
+if(req.body.password === req.body.passwordConfirm){
+        var newStudent = new Student({
+            username: req.body.username,
+          });
 
-router.post("/createTeam", function (req, res, next) {
-    Team.findOne({username: req.body.team}, function(err, team) {
-        if (err || team) {
+        Student.register(newStudent, req.body.password, function (err, student) {
+        if (err) {
             console.log(err);
-            return res.render("studentDashboard");
-        }
-    });
-    
-    async.waterfall([
+            return res.render("studentRegistration");
+        } 
+         async.waterfall([
         function(done) {
-            crypto.randomBytes(20, function(err, buf) {
-                var token = buf.toString('hex');
-                done(err, token);
-            });
-        },
-        function(token, done) {
-            var newTeam = new Team({
-
-            });
+        crypto.randomBytes(20, function(err, buf) {
+        var token = buf.toString('hex');
+        done(err, token);
+      });
+    },
+    function(token, done) {
+      Student.findOne({ username: req.body.username }, function(err, student) {
+ 
+        student.verifyToken = token;
+        student.verifyExpires = Date.now() + 3600000; // 1 hour
+        student.save(function(err) {
+          done(err, token, student);
+        });
+      });
+    },          
+    function(token, student, done) {
+      var smtpTransport = nodemailer.createTransport({
+        service: 'Gmail', 
+        auth: {
+            type: "login",
+          user: 'csechack3.0@gmail.com',
+          pass: process.env.GMAILPW
         }
-    ]);
+
+      });
+      var mailOptions = {
+        to: student.username,
+        from: 'csechack3.0@gmail.com',
+        subject: 'Verify Account',
+        text: 'Welcome\n\n' +
+          'Please click on the following link, or paste this into your browser to complete your verification process:\n\n' +
+          'http://' + req.headers.host + '/student/verify/' + token + '\n\n' +
+          'If you did not request this, ignore this email and the account will remain unverified.\n' +
+          'Please note that the link expires within an hour. \n \n' +
+          'Regards \nTeam CSEC'
+      };
+      smtpTransport.sendMail(mailOptions, function(err) {
+        console.log('mail sent');
+        req.flash('success', 'An e-mail has been sent to ' + student.username + ' with further instructions.');
+        done(err, 'done');
+      });
+    }
+  ], function(err) {
+    if (err) {
+        return next(err);
+    res.redirect('/student/login');
+}
+    else
+                res.render("test")
+
+  });
+    
+    });
+    }
+    else{
+        console.log("Passwords don't match")
+        req.flash('error', "Passwords don't match");
+     res.redirect('/student/login');
+    }
 });
 
-router.post("/signup", function (req, res) {
-    Team.findOne({username: req.body.team}, function(err, team) {
-        if (err) {
-            console.log(err);
-            return res.render("studentSignup");
+router.get('/verify/:token', function(req, res) {
+res.render("test2", {token: req.params.token});
+});
+
+
+router.post('/verify/:token', function(req, res) {
+  async.waterfall([
+    function(done) {
+      Student.findOne({ verifyToken: req.params.token, verifyExpires: { $gt: Date.now() } }, function(err, student) {
+        if (!student) {
+          req.flash('error', 'Account verification token is invalid or has expired.');
+          console.log('Account verification token is invalid or has expired.');
+          return res.redirect('back');
         }
-
-        // console.log(JSON.parse(JSON.stringify(team)).members);
-        // console.log('req.body.year');
-        // console.log(req.body.year);
-        // console.log('req.body.year');
-        if(!validateTeam(JSON.parse(JSON.stringify(team)).members, req.body.year)) {
-            return res.render("studentSignup");
+            student.isVerified = true;
+            student.verifyToken = undefined;
+            student.verifyExpires = undefined;
+            student.save(function(err) {
+                 });
+                });
+    },
+    function(student, done) {
+      var smtpTransport = nodemailer.createTransport({
+        service: 'Gmail', 
+        auth: {
+          user: 'csechack3.0@gmail.com',
+          pass: process.env.GMAILPW
         }
-
-        var newStudent = new Student({
-            name: req.body.name,
-            team: req.body.team,
-            rollNumber: req.body.rollno,
-            email: req.body.email,
-            phone: req.body.phone,
-            username: req.body.username,
-            area: req.body.area,
-            year: req.body.year,
-            skills: req.body.skills
-          });
-
-        Student.register(newStudent, req.body.password, function (err, user) {
-        if (err) {
-            console.log(err);
-            return res.render("studentSignup");
-        }  
-        delete newStudent.username;
-        delete newStudent.team;
-
-        // team.members.push(newStudent);
-        
-
-        team.members.push(newStudent);
-        team.save(function (err) {
-        });
-        //   console.log(newStudent);
-        JSON.parse(JSON.stringify(team)).members.push(newStudent);
-          
-        //   console.log(JSON.parse(JSON.stringify(team)).members);
-          team.save();
-
-        // JSON.parse(JSON.stringify(team)).members.push(newStudent);
-        // team.save(function (err) {
-        // });
-        //   console.log(newStudent);
-          
-        //   console.log(JSON.parse(JSON.stringify(team)).members);
-        //   team.save();
-
-        passport.authenticate("student")(req, res, function () {
-            res.redirect("/student/dashboard");
-          });
-    });
-    
-    });
-    });
+      });
+      var mailOptions = {
+        to: student.username,
+        from: 'csechack3.0@gmail.com',
+        subject: 'Account Verified',
+        text: 'Hello,\n\n' +
+          'This is a confirmation that the your account has just been verified.\n \n' +
+          'Regards \nTeam CSEC'
+      };
+      smtpTransport.sendMail(mailOptions, function(err) {
+        req.flash('success', 'Success! Your account has been verified.');
+        done(err);
+      });
+    }
+  ], function(err) {
+    res.redirect('/student/login');
+  });
+  console.log("Verified");
+  res.redirect('/student/login');
+});
 
 function isStudentLoggedIn(req, res, next) {
   if (req.isAuthenticated() && req.user.role === "student") {
-
     return next();
   }
   req.flash("error", "You need to be logged in to do that");
   res.redirect("/student/login");
 }
 
-// function isVerified(req, res, next) {
-//   if (req.user.isVerified == "Verified") {
-//     return next();
-//   }
-//   req.flash("error", "You need to be logged in to do that");
-//   res.redirect("/mentor/dashboard");
-// }
-
-function validateTeam(teamDetails, year) {
-    var first = 0, second = 0, third = 0, fourth = 0, fifth = 0;
-    console.log("Year" + year);
-    switch (year) {
-        case "2": second++;
-            break;
-        case "3": third++;
-            break;
-        case "4": fourth++;
-            break;
-        case "5": fifth++;
-            break;
-        case "1": first++;
-            break;
-        default: break;     // No use        
-    }
-    teamDetails.forEach(function (member) {
-        switch (member.year) {
-            case "2": second++;
-                break;
-            case "3": third++;
-                break;
-            case "4": fourth++;
-                break;
-            case "5": fifth++;
-                break;
-            case "1": first++;
-                break;
-            default: break;     // No use        
-        }
-    });
-    console.log(`Second: ${second}\nThird: ${third}\nFourth: ${fourth}\nFirst: ${first}`);
-    console.log('Team Details in Validate Form: ', teamDetails);
-    if (second > 1) {        // If there are three second years
-        if (third > 0 || fourth > 0 || fifth > 0 || second > 3) {
-            console.log('Caught at first if');
-            return false;
-        } else {
-            return true;
-        }
-    }
-    if (third > 0) {         // If there are two third years
-        if (second > 1 || fourth > 0 || fifth > 0 || third > 2) {
-            console.log('Caught at second if');
-            return false;
-        } else {
-            return true;
-        }
-    }
-    if (fourth > 0) {
-        if (third > 0 || second > 0 || fifth > 0 || fourth > 1) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    if (fifth > 0) {
-        if (third > 0 || second > 0 || fourth > 0 || fifth > 1) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-    return true;
+function isVerified(req, res, next) {
+    Student.findOne({username: req.user.username}, function(err, student){
+  if (req.user.isVerified == true) {
+    return next();
+  }
+  req.flash("error", "Please verify your account to continue to login");
+  console.log("Please verify your account to continue to login");
+  res.redirect("/student/login");      
+    })
+  
 }
+
+// function validateTeam(teamDetails, year) {
+//     var first = 0, second = 0, third = 0, fourth = 0, fifth = 0;
+//     console.log("Year" + year);
+//     switch (year) {
+//         case "2": second++;
+//             break;
+//         case "3": third++;
+//             break;
+//         case "4": fourth++;
+//             break;
+//         case "5": fifth++;
+//             break;
+//         case "1": first++;
+//             break;
+//         default: break;     // No use        
+//     }
+//     teamDetails.forEach(function (member) {
+//         switch (member.year) {
+//             case "2": second++;
+//                 break;
+//             case "3": third++;
+//                 break;
+//             case "4": fourth++;
+//                 break;
+//             case "5": fifth++;
+//                 break;
+//             case "1": first++;
+//                 break;
+//             default: break;     // No use        
+//         }
+//     });
+//     console.log(`Second: ${second}\nThird: ${third}\nFourth: ${fourth}\nFirst: ${first}`);
+//     console.log('Team Details in Validate Form: ', teamDetails);
+//     if (second > 1) {        // If there are three second years
+//         if (third > 0 || fourth > 0 || fifth > 0 || second > 3) {
+//             console.log('Caught at first if');
+//             return false;
+//         } else {
+//             return true;
+//         }
+//     }
+//     if (third > 0) {         // If there are two third years
+//         if (second > 1 || fourth > 0 || fifth > 0 || third > 2) {
+//             console.log('Caught at second if');
+//             return false;
+//         } else {
+//             return true;
+//         }
+//     }
+//     if (fourth > 0) {
+//         if (third > 0 || second > 0 || fifth > 0 || fourth > 1) {
+//             return false;
+//         } else {
+//             return true;
+//         }
+//     }
+//     if (fifth > 0) {
+//         if (third > 0 || second > 0 || fourth > 0 || fifth > 1) {
+//             return false;
+//         } else {
+//             return true;
+//         }
+//     }
+//     return true;
+// }
 
 module.exports = router;

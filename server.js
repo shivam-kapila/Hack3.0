@@ -40,8 +40,8 @@ app.use(passport.initialize());
 
 app.use(passport.session());
 
-passport.use('team', new LocalStrategy(usedStrategy = 'team', Team.authenticate()));
-passport.use('admin', new LocalStrategy(usedStrategy = 'admin', Admin.authenticate()));
+// passport.use('team', new LocalStrategy(usedStrategy = 'team', Team.authenticate()));
+// passport.use('admin', new LocalStrategy(usedStrategy = 'admin', Admin.authenticate()));
 passport.use('student', new LocalStrategy(usedStrategy = 'student', Student.authenticate()));
 
 passport.serializeUser(
@@ -62,6 +62,7 @@ passport.serializeUser(
     });
 passport.deserializeUser(
     function(user, done) {
+
         if (isTeam(user)) {
             Team.deserializeUser();
             done(null, user);
@@ -74,6 +75,7 @@ passport.deserializeUser(
         }
     });
 // // passport.deserializeUser(Admin.deserializeUser());
+
 
 function isTeam(user) {
     if (user instanceof Team)
@@ -114,6 +116,6 @@ app.use(function(req, res, next) {
 
 console.log(process.env.PORT);
 
-app.listen(process.env.PORT || 3000, process.env.IP, () => {
+app.listen(process.env.PORT || 9000, process.env.IP, () => {
     console.log("Port up and running");
 });

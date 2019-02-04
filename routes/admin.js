@@ -1,7 +1,6 @@
 var express = require("express");
 var router = express.Router();
 var Admin = require("../models/admin");
-var Mentor = require("../models/mentor");
 var Team = require("../models/team");
 var async = require("async");
 var nodemailer = require("nodemailer");

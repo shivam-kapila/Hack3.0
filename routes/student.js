@@ -1,6 +1,5 @@
 var express = require("express");
 var router = express.Router();
-var Mentor = require("../models/mentor");
 var Student = require("../models/student");
 var Team = require("../models/team");
 var async = require("async");
@@ -13,17 +12,12 @@ router.get("/signup", function (req, res) {
 });
 
 router.get("/dashboard", isStudentLoggedIn, function(req, res) {
-    Team.findOne({username: req.user.team}, function(err, team) {
-        // console.log(req.user.team);
-        // console.log(JSON.stringify(team));
-        if (err) {
-            console.log(err);
-        } else if (JSON.parse(JSON.stringify(team)).members.length < 1) {
-            res.render("teamLeaderSignup");
-        } else {
-            res.render("studentDashboard", { team: JSON.parse(JSON.stringify(team)) });
-        }
-        });
+    if(!req.user.name) {
+        res.render("studentDetails");
+    } else {
+        console.log(req.user.name);
+        res.render("dashboard");
+    }
 });
 
 router.get("/login", function(req, res) {
@@ -39,25 +33,32 @@ router.post("/login", passport.authenticate("student",
     student: req.body.username;
   });
 
+  router.get("/createTeam", function(req, res) {
+    res.render("createTeam");
+  });
 
 router.post("/createTeam", function (req, res, next) {
     Team.findOne({username: req.body.team}, function(err, team) {
-        if (err) {
+        if (err || team) {
             console.log(err);
             return res.render("studentDashboard");
         }
     });
     
-    async waterfall([
+    async.waterfall([
         function(done) {
             crypto.randomBytes(20, function(err, buf) {
+                var token = buf.toString('hex');
+                done(err, token);
+            });
+        },
+        function(token, done) {
+            var newTeam = new Team({
 
             });
         }
     ]);
 });
-
-
 
 router.post("/signup", function (req, res) {
     Team.findOne({username: req.body.team}, function(err, team) {

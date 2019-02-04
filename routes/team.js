@@ -1,6 +1,5 @@
 var express = require("express");
 var router = express.Router();
-var Mentor = require("../models/mentor");
 var async = require("async");
 var Team = require("../models/team");
 var Student = require("../models/student");

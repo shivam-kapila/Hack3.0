@@ -8,7 +8,7 @@ var teamSchema = mongoose.Schema({
         // default: "team1"
     },
     memberLength: {
-        type: Integer,
+        type: Number,
     },
     area: {
         type: String
@@ -27,12 +27,10 @@ var teamSchema = mongoose.Schema({
        type: Boolean
     },
     members: [
-         comments: [
       {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Comment"
+          ref: "Student"
       }
-      ]
     ]
 });
 

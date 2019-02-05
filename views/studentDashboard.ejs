@@ -9,34 +9,7 @@
     <th>Phone</th>
     <th style="min-width:200px;">Skills</th>
   </tr>
-  <% [...team.members].forEach(function (member) { 
-      var skills = '';%>
-  <tr class="table-row">
-    <td>
-      <%= member.name %>
-    </td>
-    <td>
-      <%= member.rollNumber %>
-    </td>
-    <td>
-      <%= member.email %>
-    </td>
-    <td>
-      <%= member.phone %>
-    </td>
-    <td style="min-width:200px;">
-      <ul>
-        <% for(var i = 0; i < member.skills.length; i++){ %>
-          <li>
-            <% if(member.skills[i] !== '') {%>
-            <%= member.skills[i];%>
-            <% } %>
-          </li>
-        <% } %>
-      </ul> 
-    </td>
-  </tr>
-    <% }); %>
+  
 </table>
 </div>
 <% if(!team.challenge) { %>

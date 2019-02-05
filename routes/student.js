@@ -34,17 +34,12 @@ router.get("/createTeam", isStudentLoggedIn, isVerified, function(req, res){
 });
 
 router.post("/createTeam", isStudentLoggedIn, isVerified, function(req, res){
-      var mentorNeed = false;
+       var mentorNeed = false;
        if(req.body.mentorRequired == "on"){
        mentorNeed = true;
        }
 
-        var newTeam = new Team({
-            username: req.body.username,
-            memberLength: req.body.members,
-            mentorRequired: mentorNeed,
-            area: req.body.area
-          });
+        
 async.waterfall([
         function(done) {
         crypto.randomBytes(10, function(err, buf) {
@@ -53,15 +48,27 @@ async.waterfall([
       });
     },
     function(token, done) {
-      Team.findOne({ username: req.body.username }, function(err, team) {
-        team.teamToken = token;
-        student.save(function(err) {
-          done(err, token, team);
+        console.log(req.body.username);
+
+        var newTeam = new Team({
+            username: req.body.username,
+            memberLength: req.body.members,
+            mentorRequired: mentorNeed,
+            area: req.body.area,
+            teamToken: token
+          });
+
+          newTeam.save();
+                  //   console.log(JSON.stringify(team));
+            Student.updateOne({username: req.user.username}, {teamusername: req.body.username, isLeader: true}, function(err, student) {
+                // console.log("HEllo" + JSON.stringify(team,undefined,4) + "HEllo");
+                     
+            done(err, token, student);
         });
-      });
     },          
     function(token, team, done) {
-      var link = 'http://' + req.headers.host + '/student/team/' +req.body.username+ token;
+        console.log("JJJJJJJJJJJJJJJJJJJJJJJJJJJJJ");
+      var link = 'http://' + req.headers.host + '/student/team/' +req.body.username + token;
       var smtpTransport = nodemailer.createTransport({
         service: 'Gmail', 
         auth: {
@@ -79,7 +86,7 @@ async.waterfall([
           'This is to inform you that you created a team with the following username:\n\n' +
           req.body.username +
           '\n \n Please share the username or else share the clickable link to accept team members. \n \n' +
-          'http://' + req.headers.host + '/student/team/' +req.body.username+ token + '\n\n' +
+          link + '\n\n' +
           'Regards \nTeam CSEC'
       };
       smtpTransport.sendMail(mailOptions, function(err) {
@@ -94,7 +101,7 @@ async.waterfall([
     res.redirect('/student/createTeam');
 }
 });
-                res.render("/student/dashboard")
+                res.redirect("/student/dashboard")
   });
 
 

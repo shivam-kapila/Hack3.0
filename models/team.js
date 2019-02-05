@@ -7,6 +7,10 @@ var teamSchema = mongoose.Schema({
         unique: true,
         // default: "team1"
     },
+    mentorRequired:
+    {
+        type: Boolean
+    },
     memberLength: {
         type: Number,
     },
@@ -19,25 +23,13 @@ var teamSchema = mongoose.Schema({
           ref: "Student"
       }
     ],
-    mentorRequired:
-    {
-        type: Boolean
-    },
+    
     mentorName: {
         type: String
     },
      teamToken: { 
        type: String
     },
-    teamTokenExpires: { 
-       type: Boolean
-    },
-    members: [
-      {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Student"
-      }
-    ]
 });
 
 // PASSWORD HASHING ADDED

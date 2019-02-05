@@ -8,15 +8,17 @@
           <div class="container">
              <h1 class="text-uppercase text-center mentor">Team Registration</h1>
 
-        <div class="row">
-                <label for="email" class="required">Enter Team Username</label>
-             <input type="text" required autofocus="on" name="team" placeholder="Team Name (Case sensitive and Unique)" class="form-control">
+                <label for="username" class="required">Enter Team Username</label>
+             <input type="text" autofocus="on" name="usename" placeholder="Team Username (Case sensitive)" class="form-control">
+             <label for="area" class="required">Field of Work</label>
+             <input type="text" autofocus="on" name="area" placeholder="Field of Work" class="form-control">
+
              <br /><br />  <label for="members" class="required">Enter The number of members(do not include the mentor)</label>
              <select class="form-control" name="members" id="members" onchange="checkValues()">
                     <option value="4">4</option>
                     <option value="5">5</option>
                 </select>
-        </div>
+
         <input type="checkbox" name="mentorRequired" onchange="checkValues()" id="mentorRequired" ><label for="mentorRequired" id="label4mentor">Check if you want a mentor (Make sure you have read the rules before proceeding)</label><br>
  <div class="buttoncustom col-md-6">
         <input type="button" name="Register" value="Register" onclick="validateForm()" class="ui bg-dark button text-light myclass">

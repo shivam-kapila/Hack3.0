@@ -5,7 +5,8 @@ var Team = require("../models/team");
 var async = require("async");
 var crypto = require("crypto");
 var nodemailer = require("nodemailer");
-var passport = require("passport"),
+var passport = require("passport");
+var ObjectId = require('mongodb').ObjectID;
   LocalStrategy = require('passport-local').Strategy;
 
 router.get("/signup", function (req, res) {
@@ -13,19 +14,36 @@ router.get("/signup", function (req, res) {
 });
 
 router.get("/dashboard",isStudentLoggedIn, isVerified, function(req, res) {
-    if(!req.user.name) {
+    // console.log(req.user);
+    if(req.user.name === undefined) {
         res.render("studentDetails");
     } else {
-        console.log(req.user.name);
-        if(req.user.teamusername) {
+            // console.log(req.body.username);
+        // console.log(req.user.name);
+        // console.log(req.user.teamusername);
+        let students = [];
+
+        if(req.user.teamusername !== undefined) {
             Team.findOne({username: req.user.teamusername}, function(err, team) {
-                team = team.toObject();
-                res.render("studentDashboard", {team});
+                if(!err) {
+                    console.log("team"+ JSON.stringify(team));
+                    for(var i = 0 ; i < team.members.length; i++) {
+                    Student.find({_id: ObjectId(team.members[i])}, function(err, student) {
+                        if(!err){
+                            // student.forEach((person) => students.push(person));
+                            console.log("---_______--___----" + student + "---_______--___----");
+                            students = student;
+                        }
+                    });
+                    //   console.log(`Students ${JSON.stringify(students)}`);
+                    }
+                } if(!err) {
+                    res.render("studentDashboard", {students});
+                }
             });    
         } else {
-            res.render("studentDashboard");
+            res.render("studentDashboard", {students});
         }
-        
     }
 });
 
@@ -48,7 +66,7 @@ async.waterfall([
       });
     },
     function(token, done) {
-        console.log(req.body.username);
+        // console.log(req.body.username);
 
         var newTeam = new Team({
             username: req.body.username,
@@ -61,14 +79,22 @@ async.waterfall([
           newTeam.save();
                   //   console.log(JSON.stringify(team));
             Student.updateOne({username: req.user.username}, {teamusername: req.body.username, isLeader: true}, function(err, student) {
-                // console.log("HEllo" + JSON.stringify(team,undefined,4) + "HEllo");
-                     
-            done(err, token, student);
-        });
+            });
+            console.log(req.body.username);
+            Team.findOne({username: req.body.username}, function(err, team){
+                if(!err) {
+                    Team.updateOne({username: req.body.username}, {$push: {members: req.user._id}}, function(errr, none){
+                        if(!errr) {
+                            done(errr, token, team);
+                        }
+                    });
+                      
+                }
+            }); 
     },          
     function(token, team, done) {
         console.log("JJJJJJJJJJJJJJJJJJJJJJJJJJJJJ");
-      var link = 'http://' + req.headers.host + '/student/team/' +req.body.username + token;
+      var link = 'http://' + req.headers.host + '/student/team/' +req.body.username + "/" + token;
       var smtpTransport = nodemailer.createTransport({
         service: 'Gmail', 
         auth: {
@@ -98,23 +124,49 @@ async.waterfall([
   ], function(err) {
     if (err) {
         return next(err);
-    res.redirect('/student/createTeam');
 }
 });
                 res.redirect("/student/dashboard")
   });
 
+  router.get("/team/:teamName/:token", isStudentLoggedIn, isVerified, function(req, res) {
+    //   console.log(req.user.username);
+    // if(req.user.teamusername !== undefined) {
+    // } else {
+    {Team.findOne({username: req.params.teamName, teamToken: req.params.token}, function(err, team) {
+            if(!err) {
+                console.log("team" + team);
+                
+                if(team.members.length <= team.memberLength) {
+                    Student.updateOne({username: req.user.username}, {teamusername: req.params.teamName}, function(err, stat) {
+                        if(!err) {
+                            
+                            Team.updateOne({username: req.params.teamName}, {$push: {members: req.user._id}}, function(errr, none){
+                                if(!errr) {
+                                    console.log("HElloi");
+                                    res.redirect("/student/dashboard");
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+         });
+    }
+  });
 
 
 
 router.post("/details", isStudentLoggedIn, isVerified, function(req, res) {
-    Student.findOne({username: req.user.username}, function(err, student) {
-        student.name = req.body.name;
-        student.phone = req.body.phone;
-        student.year = req.body.year;
-        student.rollNumber = req.body.rollno;
-        student.save();
-    });
+    Student.updateOne({username: req.user.username}, {name: req.body.name,
+        phone: req.body.phone,
+        year: req.body.year,
+        rollNumber: req.body.rollno}, function(err, student) {
+            req.user.teamName = req.body.username;
+            if(!err) {
+                res.redirect("/student/dashboard");
+            }
+        });
 });
 
 router.get("/login", function(req, res) {

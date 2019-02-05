@@ -1,39 +1,34 @@
 <% include ./partials/header %>
 </form>
 <div class = "scrollit">
-<table class="">
-  <tr class="thead-dark">
-    <th>Name</th>
-    <th>Roll No.</th>
-    <th>Email</th>
-    <th>Phone</th>
-    <th style="min-width:200px;">Skills</th>
-  </tr>
+
+  <%
+  if(student.length === 0) { %>
+    <form action="/student/createTeam" method="GET">
+        <button class="btn btn-info btn-sm">Create Team</button>
+      </form>
+    
+      <form action="/student/joinTeam" method="GET">
+        <button class="btn btn-info btn-sm">Join Team</button>
+      </form>
+  <% } else { if(student.length !== 0) {%>
+    <table class="">
+            <tr class="thead-dark">
+              <th>Name</th>
+              <th>Roll No.</th>
+              <th>Email</th>
+              <th>Phone</th>
+            </tr>
+      <%} console.log(student.length); for(var i=0; i < student.length; i++) {%>
+        <tr>
+            <td><%=student[i].name%></td>
+            <td><%=student[i].rollNumber%></td>
+            <td><%=student[i].username%></td>
+            <td><%=student[i].phone%></td>
+        </tr>
+  <% }} %>  
   
 </table>
 </div>
-<% if(!team.challenge) { %>
-<form action="/team/postChallenge" method="GET">
-  <button class="btn btn-info btn-sm">Self challenge</button>
-</form>
-<% } else {%>
-<p>
-  Challenge posted:
-  <br />
-  <strong>Title:</strong> <%= team.challenge.title%>
-  <br />
-  <strong>Description:</strong> <%= team.challenge.description%>
-  <br />
-  <strong>Category:</strong> <%= team.challenge.category.split('_').join(' ');%>
-  </p>
-  <% }%>
 
 <% include ./partials/footer %>
-
-<form action="/student/createTeam" method="GET">
-    <button class="btn btn-info btn-sm">Create Team</button>
-  </form>
-
-  <form action="/student/joinTeam" method="GET">
-    <button class="btn btn-info btn-sm">Join Team</button>
-  </form>

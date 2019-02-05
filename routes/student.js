@@ -17,7 +17,15 @@ router.get("/dashboard",isStudentLoggedIn, isVerified, function(req, res) {
         res.render("studentDetails");
     } else {
         console.log(req.user.name);
-        res.render("studentDashboard");
+        if(req.user.teamusername) {
+            Team.findOne({username: req.user.teamusername}, function(err, team) {
+                team = team.toObject();
+                res.render("studentDashboard", {team});
+            });    
+        } else {
+            res.render("studentDashboard");
+        }
+        
     }
 });
 

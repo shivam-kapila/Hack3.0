@@ -3,7 +3,7 @@
 <div>
   <div class="signup-form back mt-4 mb-4">
 
-  <form action="/student/createTeam" method="POST">
+  <form id="myForm" action="/student/createTeam" method="POST">
       <div class="centering">
           <div class="container">
              <h1 class="text-uppercase text-center mentor">Team Registration</h1>
@@ -12,6 +12,7 @@
              <input type="text" autofocus="on" name="usename" placeholder="Team Username (Case sensitive)" class="form-control">
              <label for="area" class="required">Field of Work</label>
              <input type="text" autofocus="on" name="area" placeholder="Field of Work" class="form-control">
+
              <br /><br />  <label for="members" class="required">Enter The number of members(do not include the mentor)</label>
              <select class="form-control" name="members" id="members" onchange="checkValues()">
                     <option value="4">4</option>
@@ -38,10 +39,9 @@
 
         </script>
 <script>
+
     function checkValues() {
-        console.log(typeof $("#members").val());
-        if(($("#members").val() === '5') && ($("#mentorRequired").val() === 'on')) {
-            console.log("HEllo");
+        if(($("#members").val() === '5') && ($("#mentorRequired").is(":checked"))) {
             $("#members").val("4");
         }
     }
@@ -51,8 +51,10 @@
         if($("#members").val() > 5) {
             alert("Maximum members allowed are 5");
         }
-        else if(($("#members").val() == 5) && ($("#mentorRequired").val() == "on")) {
+        else if(($("#members").val() == 5) && ($("#mentorRequired").is(":checked"))) {
             alert("If you require a mentor the maximum members allowed are 4");
+        } else {
+            $("#myForm").submit();
         }
     }
 </script>

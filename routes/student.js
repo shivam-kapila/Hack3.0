@@ -12,8 +12,7 @@ router.get("/signup", function (req, res) {
   res.render("studentRegistration");
 });
 
-
-router.get("/dashboard", isStudentLoggedIn, isVerified,function(req, res) {
+router.get("/dashboard",isStudentLoggedIn, isVerified, function(req, res) {
     if(!req.user.name) {
         res.render("studentDetails");
     } else {
@@ -22,11 +21,11 @@ router.get("/dashboard", isStudentLoggedIn, isVerified,function(req, res) {
     }
 });
 
-router.get("/createTeam", isVerified, isStudentLoggedIn, function(req, res){
+router.get("/createTeam", isStudentLoggedIn, isVerified, function(req, res){
         res.render("createTeam");
 });
 
-router.post("/createTeam", isVerified, isStudentLoggedIn, function(req, res){
+router.post("/createTeam", isStudentLoggedIn, isVerified, function(req, res){
       var mentorNeed = false;
        if(req.body.mentorRequired == "on"){
        mentorNeed = true;
@@ -46,7 +45,7 @@ async.waterfall([
       });
     },
     function(token, done) {
-      Team.findOne({ username: req.body.username }, function(err, student) {
+      Team.findOne({ username: req.body.username }, function(err, team) {
         team.teamToken = token;
         student.save(function(err) {
           done(err, token, team);
@@ -86,11 +85,21 @@ async.waterfall([
         return next(err);
     res.redirect('/student/createTeam');
 }
+});
                 res.render("/student/dashboard")
   });
 
 
 
+
+router.post("/details", isStudentLoggedIn, isVerified, function(req, res) {
+    Student.findOne({username: req.user.username}, function(err, student) {
+        student.name = req.body.name;
+        student.phone = req.body.phone;
+        student.year = req.body.year;
+        student.rollNumber = req.body.rollno;
+        student.save();
+    });
 });
 
 router.get("/login", function(req, res) {
